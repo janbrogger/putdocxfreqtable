@@ -29,14 +29,18 @@ program define putdocxfreqtable
 		}
 		qui summ `freq'
 		qui replace `freq'=`r(sum)' if _n==_N		
+		local sumif "if _n<_N"		
 	}
+	else {
+		local sumif ""	
+	}	
 	
-	order `varlist'
-	qui summ `freq' if _n<_N
-	gen `percent'=`freq'/`r(sum)'*100
-	gen `cumcount' = sum(`freq')	
-	qui summ `freq' if _n<_N
-	gen `cumpercent'= `cumcount'/`r(sum)'*100	
+	order `varlist'	
+	qui summ `freq' `sumif'
+	qui gen `percent'=`freq'/`r(sum)'*100	
+	qui gen `cumcount' = sum(`freq') `sumif'
+	qui summ `freq' `sumif'
+	qui gen `cumpercent'= `cumcount'/`r(sum)'*100	
 	drop `cumcount'
 	format `percent' `cumpercent' %3.1f
 	label variable `freq' "Count"
@@ -57,6 +61,7 @@ program define putdocxfreqtable
 		local matvars `freq' `percent' `cumpercent' 
 		local colnames `""Count" "%" "Cum. %""'
 	}
+	
 	
 	mkmat `matvars' , mat(data)	
 			
@@ -94,7 +99,11 @@ program define putdocxfreqtable
 	di `"`title'"'
 	matlist data 
 
-	tempname mytable
+
+	*tempname doesn't work?
+	*tempname mytable
+	local mytable=floor(runiform()*10000)
+	local mytable="t`mytable'"
 	putdocx table `mytable' = matrix(data), width(70%) title(`"`title'"') nformat(%4.0f) rownames  colnames 
 	restore
 	
