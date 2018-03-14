@@ -4,7 +4,7 @@
 capture program drop putdocxfreqtable
 program define putdocxfreqtable
 	version 15.1
-	syntax varlist(min=1 max=1) , [noCUM] [noSUM]
+	syntax varlist(min=1 max=1) [if], [noCUM] [noSUM]
 	capture putdocx describe
 	if _rc {
 		di in smcl as error "ERROR: No active docx."
@@ -12,6 +12,9 @@ program define putdocxfreqtable
 	}
 		
 	preserve	
+	if `"`if'"'!=`""' {
+		keep `if'
+	}
 	tempname freq percent cumcount cumpercent
 	contract `varlist' , freq(`freq')
 			
