@@ -9,7 +9,7 @@
 {title:Syntax}
 
 {p 8 17 2}
-{cmdab:putdocxfreqtable} {varlist} , [noCUM] [noSUM]
+{cmdab:putdocxfreqtable} {varlist} , [noCUM] [noSUM [PERCDigits(#) [LABLen(#)]]
 
 {marker description}
 {title:Description}
@@ -22,11 +22,12 @@
 {phang}Options:{p_end}
 {phang}nocum : drops the cumulative sum in the frequency table {p_end}
 {phang}nocum : drops the row sum in the frequency table {p_end}
-{phang}PERCDigits : number of digits in percentages. Default 32. Cannot be less than 1 or more than 32. {p_end}
+{phang}PERCDigits : number of digits in percentages. Default 0 {p_end}
+{phang}LABLen: maximum length of category labels. Default is no truncation. {p_end}
 
 {marker remarks}
 {title:Remarks}
-{phang}Category labels or category values are limited to 32 characters.{p_end}
+{phang}In the Stata output, category labels are truncated at 32 characters. They are not truncated in the Word document.{p_end}
 
 {marker example}
 {title:Example}

@@ -4,21 +4,17 @@
 capture program drop putdocxfreqtable
 program define putdocxfreqtable
 	version 15.1
-	syntax varlist(min=1 max=1) [if], [noCUM] [noSUM] [PERCDigits(integer 0)] [LABLEN(integer 32)]
+	syntax varlist(min=1 max=1) [if], [noCUM] [noSUM] [PERCDigits(integer 0)] [LABLen(integer 0)]
 	capture putdocx describe
 	if _rc {
 		di in smcl as error "ERROR: No active docx."
 		exit = 119
 	}
 	
-	if `lablen'<1 {
-		di in smcl as error "ERROR: LABLEN cannot be less than 1"		
+	if `lablen'<0 {
+		di in smcl as error "ERROR: LABLEN cannot be negative"
 		exit = 120
-	}
-	if `lablen'>32 {
-		di in smcl as error "ERROR: LABLEN cannot larger than 32"
-		exit = 121
-	}
+	}	
 		
 	preserve	
 	if `"`if'"'!=`""' {
@@ -73,29 +69,35 @@ program define putdocxfreqtable
 		local matvars `freq' `percent' `cumpercent' 
 		local colnames `""Count" "%" "Cum. %""'
 	}
-	
-	
+		
 	mkmat `matvars' , mat(data)	
 			
-	//Fix rownames
-	local lbe : value label `varlist'
+	//Make temporary rownames	
 	qui levelsof `varlist' , local(levels)
 	local rownames ""
-	
+	local rowcount : word count `levels'
+
+	local lbe : value label `varlist'
+	qui levelsof `varlist' , local(levels)
 	
 	foreach l of local levels {
 		if "`lbe'"!="" {
 			local vallab : label `lbe' `l'
+			//Truncate label length if specified
 			if `lablen' >= 1 {
-				local vallab=substr("`vallab'",1,`lablen')
+				local vallab=substr(`'"`vallab'"',1,`lablen')
 			}
-			local rownames `"`rownames' "`vallab'" "'
+			if strlen(`"`vallab'"')>32 {
+				local vallab=substr(`'"`vallab'"',1,32)
+				local vallab `"`vallab'"'
+			}
+			local rownames `"`rownames' `vallab'"'
 		}
-		else {
-			local rownames `"`rownames' "`l'" "'
+		else {			
+			local rownames `'"`rownames' `l'"'
 		}		
-	}
-	
+	}		
+
 	//Add sum rowname if present
 	if "`sum'"!="nosum" {
 		local rownames `"`rownames' "SUM" "'
@@ -124,6 +126,28 @@ program define putdocxfreqtable
 	putdocx table `mytable' = matrix(data), width(70%) title(`"`title'"')  rownames  colnames 
 	cap putdocx table `mytable'(., 3), nformat(`nformat')
 	cap putdocx table `mytable'(., 4), nformat(`nformat')
+	
+	
+	//Do rownames better to avoid truncation of long labels
+	local lbe : value label `varlist'
+	qui levelsof `varlist' , local(levels)
+	local row=3
+		
+	foreach l of local levels {
+		if "`lbe'"!="" {
+			local vallab : label `lbe' `l'
+			//Truncate label length if specified
+			if `lablen' >= 1 {
+				local vallab=substr("`vallab'",1,`lablen')
+			}
+			putdocx table `mytable'(`row',1) = (`"`vallab'"')
+		}
+		else {			
+			putdocx table `mytable'(`row',1) = (`l')
+		}		
+		local row=`row'+1
+	}		
+	
 	restore
 	
 	
