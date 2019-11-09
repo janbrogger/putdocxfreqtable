@@ -4,11 +4,20 @@
 capture program drop putdocxfreqtable
 program define putdocxfreqtable
 	version 15.1
-	syntax varlist(min=1 max=1) [if], [noCUM] [noSUM] [PERCDigits(integer 0)]
+	syntax varlist(min=1 max=1) [if], [noCUM] [noSUM] [PERCDigits(integer 0)] [LABLEN(integer 32)]
 	capture putdocx describe
 	if _rc {
 		di in smcl as error "ERROR: No active docx."
 		exit = 119
+	}
+	
+	if `lablen'<1 {
+		di in smcl as error "ERROR: LABLEN cannot be less than 1"		
+		exit = 120
+	}
+	if `lablen'>32 {
+		di in smcl as error "ERROR: LABLEN cannot larger than 32"
+		exit = 121
 	}
 		
 	preserve	
@@ -76,7 +85,10 @@ program define putdocxfreqtable
 	
 	foreach l of local levels {
 		if "`lbe'"!="" {
-			local vallab : label `lbe' `l'			
+			local vallab : label `lbe' `l'
+			if `lablen' >= 1 {
+				local vallab=substr("`vallab'",1,`lablen')
+			}
 			local rownames `"`rownames' "`vallab'" "'
 		}
 		else {

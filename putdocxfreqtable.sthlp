@@ -22,6 +22,11 @@
 {phang}Options:{p_end}
 {phang}nocum : drops the cumulative sum in the frequency table {p_end}
 {phang}nocum : drops the row sum in the frequency table {p_end}
+{phang}PERCDigits : number of digits in percentages. Default 32. Cannot be less than 1 or more than 32. {p_end}
+
+{marker remarks}
+{title:Remarks}
+{phang}Category labels or category values are limited to 32 characters.{p_end}
 
 {marker example}
 {title:Example}
