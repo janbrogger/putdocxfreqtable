@@ -4,7 +4,7 @@
 capture program drop putdocxfreqtable
 program define putdocxfreqtable
 	version 15.1
-	syntax varlist(min=1 max=1) [if], [noCUM] [noSUM]
+	syntax varlist(min=1 max=1) [if], [noCUM] [noSUM] [PERCDigits(integer 0)]
 	capture putdocx describe
 	if _rc {
 		di in smcl as error "ERROR: No active docx."
@@ -107,7 +107,11 @@ program define putdocxfreqtable
 	*tempname mytable
 	local mytable=floor(runiform()*10000)
 	local mytable="t`mytable'"
-	putdocx table `mytable' = matrix(data), width(70%) title(`"`title'"') nformat(%4.0f) rownames  colnames 
+	local nformat "%4.`percdigits'f"
+	
+	putdocx table `mytable' = matrix(data), width(70%) title(`"`title'"')  rownames  colnames 
+	cap putdocx table `mytable'(., 3), nformat(`nformat')
+	cap putdocx table `mytable'(., 4), nformat(`nformat')
 	restore
 	
 	
